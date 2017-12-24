@@ -15,7 +15,7 @@ import android.text.TextUtils
 import android.os.Binder
 import android.provider.Settings.Secure
 import android.provider.Settings;
-import android.support.v7.app.NotificationCompat
+
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*;
 import android.content.ComponentName
@@ -24,22 +24,21 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.app.NotificationCompat
+import com.google.firebase.iid.FirebaseInstanceId
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+import pl.bmideas.michal.bmnotifier.Events.FireBaseEvent
+import pl.bmideas.michal.bmnotifier.Events.NotificationListenerDiconectedEvent
+import pl.bmideas.michal.bmnotifier.Events.TestEvent
+import pl.bmideas.michal.bmnotifier.Helpers.PreferencesHelper
+import java.util.prefs.Preferences
 
-
-
-private val mConnection = object : ServiceConnection {
-
-    override fun onServiceConnected(className: ComponentName,
-                                    service: IBinder) {
-
-    }
-
-    override fun onServiceDisconnected(arg0: ComponentName) {
-
-    }
-}
 
 class MainActivity : AppCompatActivity() {
+
+
 
     private final val ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
     private final var ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
@@ -49,35 +48,60 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val intent = Intent(this, MyNotificationListener::class.java)
-        bindService(intent , mConnection,Context.BIND_AUTO_CREATE)
         val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
         if(!hasPermission){
             ActivityCompat.requestPermissions(this , arrayOf( Manifest.permission.INTERNET) , PERMISSION_GRANTED)
-
         }
-
+        val refreshedToken = FirebaseInstanceId.getInstance().getToken();
+        Log.d("MainActivity", "Refreshed token: " + refreshedToken);
 
     }
+
+    private fun isRegistered():Boolean{
+        val prefs = PreferencesHelper().getPreferences();
+        return prefs.getBoolean(PreferencesHelper.PrefsKeys.IS_REGISTERED , false)
+    }
+    override fun onStop() {
+        super.onStop()
+        EventBus.getDefault().unregister(this);
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
 
-        var enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
-        enableNotificationListenerAlertDialog.show();
-        val intent = Intent(this, MyNotificationListener::class.java)
+
+        if(!isNotificationServiceEnabled()) {
+            var enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
+            enableNotificationListenerAlertDialog.show();
+        }
+
 
         //startService(intent);
         this.button.setOnClickListener({ v -> run{
-            sendNotification(this.applicationContext , "TEST" , "BODY")
+            sendNotification(this.applicationContext , this.TitleInput.text.toString() , this.BodyInput.text.toString())
         } })
+        this.testEventButton.setOnClickListener { run{
+            var event = TestEvent()
+            event.title = this.TitleInput.text.toString()
+            EventBus.getDefault().post(event)
 
+        } }
+
+        if(!isRegistered()) {
+            val intent = Intent(applicationContext, LoginActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+            startActivity(intent)
+        }
 
     }
     fun sendNotification(context: Context, title: String, body: String){
-        val notification = NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.notification_icon_background)
+        val notification = NotificationCompat.Builder(context  , BlackBulletApplication.NOTIFICATIONCHANLELL_ID)
+                .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+
                 .setContentTitle(title)
                 .setContentText(body)
 
@@ -89,17 +113,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildNotificationServiceAlertDialog(): AlertDialog {
         val alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("właczamy")
-        alertDialogBuilder.setMessage("serwis notyfikacji")
-        alertDialogBuilder.setPositiveButton("tAA",
+        alertDialogBuilder.setTitle("Notifications permissions required")
+        alertDialogBuilder.setMessage("This application needs special priviledge to fetch your notifications. Can we turn it on?")
+        alertDialogBuilder.setPositiveButton("OK",
                 DialogInterface.OnClickListener { dialog, id -> startActivity(Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS)) })
-        alertDialogBuilder.setNegativeButton("NIiiii",
+        alertDialogBuilder.setNegativeButton("Cancel(will not work properly)",
                 DialogInterface.OnClickListener { dialog, id ->
                     // If you choose to not enable the notification listener
                     // the app. will not work as expected
                 })
         return alertDialogBuilder.create()
     }
+
+
+
 
     private fun isNotificationServiceEnabled(): Boolean {
         val pkgName = packageName

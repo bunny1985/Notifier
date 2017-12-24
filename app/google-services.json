@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "973883644602",
+    "firebase_url": "https://blackbullet-69cce.firebaseio.com",
+    "project_id": "blackbullet-69cce",
+    "storage_bucket": "blackbullet-69cce.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:973883644602:android:41a5073bcf646ddd",
+        "android_client_info": {
+          "package_name": "pl.bmideas.michal.bmnotifier"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "973883644602-sggrucn8t4u5826k3g1jsjk0q52sjd7d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGY2IVFuvPg3mWb_MdrFmKyC7hiuJoct8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
