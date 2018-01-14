@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
 
     <application
         android:allowBackup="true"
@@ -21,7 +22,7 @@
         android:theme="@style/AppTheme"
         android:name=".BlackBulletApplication">
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".Activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -31,7 +32,7 @@
 
         <service
 
-            android:name=".NotificationListener"
+            android:name=".Services.MyNotificationListenerService"
             android:label="@string/service_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
@@ -39,7 +40,7 @@
             </intent-filter>
         </service>
         <service
-            android:name=".MyFirebaseMessagingService">
+            android:name=".Services.MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
@@ -47,30 +48,39 @@
         <!-- [END firebase_service] -->
         <!-- [START firebase_iid_service] -->
         <service
-            android:name=".MyFirebaseInstanceIDService">
+            android:name=".Services.MyFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>
         </service>
         <!-- [END firebase_iid_service] -->
-        <service android:name=".MyJobService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
-            </intent-filter>
-        </service>
+
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".Activities.LoginActivity"
             android:label="@string/title_activity_login" />
-        <activity
-            android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="pl.bmideas.michal.bmnotifier.MainActivity" />
-        </activity>
+
+
+        <receiver
+            android:name=".BroadCastRecivers.RestartServicesReciver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">
+            <intent-filter>
+                <action android:name=".RestartNotificationsService"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name=".RestartFireBaseService"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name=".StopNotificationsService"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name=".StopFireBaseService"/>
+            </intent-filter>
+
+        </receiver>
+
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package pl.bmideas.michal.bmnotifier.RestApi
+package pl.bmideas.michal.bmnotifier.RestApi.Models
 
 /**
  * Created by michal on 12/23/17.

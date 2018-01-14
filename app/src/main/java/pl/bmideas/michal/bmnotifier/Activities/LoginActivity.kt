@@ -1,4 +1,4 @@
-package pl.bmideas.michal.bmnotifier
+package pl.bmideas.michal.bmnotifier.Activities
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -11,7 +11,6 @@ import android.content.CursorLoader
 import android.content.Loader
 import android.database.Cursor
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
@@ -23,6 +22,7 @@ import android.widget.TextView
 
 import java.util.ArrayList
 import android.Manifest.permission.READ_CONTACTS
+import android.Manifest.permission.SEND_SMS
 import android.widget.Toast
 import com.google.firebase.iid.FirebaseInstanceId
 
@@ -33,6 +33,7 @@ import org.greenrobot.eventbus.ThreadMode
 import pl.bmideas.michal.bmnotifier.Events.ApiLoginAttemptFailed
 import pl.bmideas.michal.bmnotifier.Events.ApiLoginSuccesfull
 import pl.bmideas.michal.bmnotifier.Helpers.PreferencesHelper
+import pl.bmideas.michal.bmnotifier.R
 import pl.bmideas.michal.bmnotifier.RestApi.ApiServiceEventsHandler
 
 /**
@@ -56,7 +57,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             }
             false
         })
-
+        maySendSms()
         email_sign_in_button.setOnClickListener { attemptLogin() }
     }
 
@@ -84,6 +85,19 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         }
         return false
     }
+    private fun maySendSms(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return true
+        }
+        if (checkSelfPermission(SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
+            return true
+        }
+
+            requestPermissions(arrayOf(SEND_SMS), REQUEST_SEND_SMS)
+
+        return false
+    }
+
 
     /**
      * Callback received when a permissions request has been completed.
@@ -283,5 +297,6 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
          * Id to identity READ_CONTACTS permission request.
          */
         private val REQUEST_READ_CONTACTS = 0
+        private val REQUEST_SEND_SMS = 0
     }
 }

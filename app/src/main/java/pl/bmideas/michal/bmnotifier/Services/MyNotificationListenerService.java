@@ -1,6 +1,7 @@
-package pl.bmideas.michal.bmnotifier;
+package pl.bmideas.michal.bmnotifier.Services;
 
 import android.app.Notification;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -12,25 +13,20 @@ import android.util.Log;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 import pl.bmideas.michal.bmnotifier.RestApi.ApiServiceEventsHandler;
-import pl.bmideas.michal.bmnotifier.RestApi.BackendApi;
-import pl.bmideas.michal.bmnotifier.RestApi.BackendApiHelper;
-import pl.bmideas.michal.bmnotifier.RestApi.LoginModel;
-import pl.bmideas.michal.bmnotifier.RestApi.NotificationModel;
-import retrofit2.Response;
+import pl.bmideas.michal.bmnotifier.RestApi.Models.NotificationModel;
 
 /**
  * Created by michal on 12/23/17.
  */
 
-public class NotificationListener extends NotificationListenerService {
+public class MyNotificationListenerService extends android.service.notification.NotificationListenerService {
     public static String TAG = "MBNotificationListemer";
 
 
 
-    NotificationListener(){
+    MyNotificationListenerService(){
         super();
 
     }
@@ -56,8 +52,17 @@ public class NotificationListener extends NotificationListenerService {
 
     }
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG , "Restarting");
+        Intent broadcastIntent = new Intent(".RestartNotificationsService");
+        sendBroadcast(broadcastIntent);
+    }
+
+    @Override
     public void onCreate(){
         super.onCreate();
+        Log.i(TAG , "Creating");
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         new ApiServiceEventsHandler().StoreToken(refreshedToken);
 
@@ -65,14 +70,17 @@ public class NotificationListener extends NotificationListenerService {
 
     private void reflectNotification(StatusBarNotification sbn){
 
+                try {
 
+                    NotificationModel model = new NotificationModel();
 
-                NotificationModel model = new NotificationModel();
+                    String title = sbn.getNotification().extras.getString("android.title").toString();
+                    String body = sbn.getNotification().extras.getString("android.text").toString();
+                    String packageName = sbn.getPackageName().toString();
+                    new ApiServiceEventsHandler().RefltectNotification(title, body, packageName);
+                }catch(Exception e){
 
-                String title = sbn.getNotification().extras.getString("android.title").toString();
-                String body = sbn.getNotification().extras.getString("android.text").toString();
-                String packageName = sbn.getPackageName().toString();
-                new ApiServiceEventsHandler().RefltectNotification(title, body, packageName);
+                }
 
     }
 

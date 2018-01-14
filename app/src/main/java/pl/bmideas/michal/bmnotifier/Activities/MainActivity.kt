@@ -1,39 +1,29 @@
-package pl.bmideas.michal.bmnotifier
+package pl.bmideas.michal.bmnotifier.Activities
 
 import android.Manifest
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.R.string.no
-import android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS
-import android.R.string.yes
 import android.app.AlertDialog;
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.*
 
 import android.text.TextUtils
-import android.os.Binder
-import android.provider.Settings.Secure
 import android.provider.Settings;
 
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*;
 import android.content.ComponentName
-import android.os.IBinder
-import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.app.NotificationCompat
 import com.google.firebase.iid.FirebaseInstanceId
 import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
-import pl.bmideas.michal.bmnotifier.Events.FireBaseEvent
-import pl.bmideas.michal.bmnotifier.Events.NotificationListenerDiconectedEvent
-import pl.bmideas.michal.bmnotifier.Events.TestEvent
+import pl.bmideas.michal.bmnotifier.BlackBulletApplication
+import pl.bmideas.michal.bmnotifier.Events.NotificationRequestedEvent
+
 import pl.bmideas.michal.bmnotifier.Helpers.PreferencesHelper
-import java.util.prefs.Preferences
+import pl.bmideas.michal.bmnotifier.R
 
 
 class MainActivity : AppCompatActivity() {
@@ -48,10 +38,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED
+        val hasPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS ) == PackageManager.PERMISSION_GRANTED
         if(!hasPermission){
-            ActivityCompat.requestPermissions(this , arrayOf( Manifest.permission.INTERNET) , PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this , arrayOf( Manifest.permission.INTERNET , Manifest.permission.SEND_SMS , Manifest.permission.READ_CONTACTS ) , PERMISSION_GRANTED)
         }
+
+
         val refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Log.d("MainActivity", "Refreshed token: " + refreshedToken);
 
@@ -61,6 +53,8 @@ class MainActivity : AppCompatActivity() {
         val prefs = PreferencesHelper().getPreferences();
         return prefs.getBoolean(PreferencesHelper.PrefsKeys.IS_REGISTERED , false)
     }
+
+
     override fun onStop() {
         super.onStop()
         EventBus.getDefault().unregister(this);
@@ -83,12 +77,21 @@ class MainActivity : AppCompatActivity() {
         this.button.setOnClickListener({ v -> run{
             sendNotification(this.applicationContext , this.TitleInput.text.toString() , this.BodyInput.text.toString())
         } })
-        this.testEventButton.setOnClickListener { run{
-            var event = TestEvent()
-            event.title = this.TitleInput.text.toString()
-            EventBus.getDefault().post(event)
+        this.ButtonStopServices.setOnClickListener({ v -> run{
+            sendNotification(this.applicationContext , "Stopping Services" , "Sending stop Signal to services")
+            var broadcastIntent = Intent(".StopFireBaseService")
+            sendBroadcast(broadcastIntent)
+            broadcastIntent  = Intent(".StopNotificationsService")
+            sendBroadcast(broadcastIntent)
+        } })
+        this.ButtonStartServices.setOnClickListener({ v -> run{
+            sendNotification(this.applicationContext , "Starting Services" , "Sending start Signal to services")
+            var broadcastIntent = Intent(".RestartFireBaseService")
+            sendBroadcast(broadcastIntent)
+            broadcastIntent  =Intent(".RestartNotificationsService")
+            sendBroadcast(broadcastIntent)
+        } })
 
-        } }
 
         if(!isRegistered()) {
             val intent = Intent(applicationContext, LoginActivity::class.java)
@@ -99,16 +102,7 @@ class MainActivity : AppCompatActivity() {
 
     }
     fun sendNotification(context: Context, title: String, body: String){
-        val notification = NotificationCompat.Builder(context  , BlackBulletApplication.NOTIFICATIONCHANLELL_ID)
-                .setSmallIcon(R.drawable.ic_notifications_black_24dp)
-
-                .setContentTitle(title)
-                .setContentText(body)
-
-
-        //notification.setContentIntent(pendingIntent)
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(1, notification.build())
+        EventBus.getDefault().post(NotificationRequestedEvent(title , body))
     }
 
     private fun buildNotificationServiceAlertDialog(): AlertDialog {

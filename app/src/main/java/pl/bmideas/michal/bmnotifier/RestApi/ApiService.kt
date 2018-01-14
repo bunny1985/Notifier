@@ -1,10 +1,11 @@
 package pl.bmideas.michal.bmnotifier.RestApi
 
-import android.app.IntentService
-import android.content.Intent
 import org.greenrobot.eventbus.EventBus
 import pl.bmideas.michal.bmnotifier.Events.*
 import pl.bmideas.michal.bmnotifier.Helpers.PreferencesHelper
+import pl.bmideas.michal.bmnotifier.RestApi.Models.FirebaseTokenModel
+import pl.bmideas.michal.bmnotifier.RestApi.Models.LoginModel
+import pl.bmideas.michal.bmnotifier.RestApi.Models.NotificationModel
 import kotlin.concurrent.thread
 
 
@@ -12,13 +13,14 @@ import kotlin.concurrent.thread
  * Created by michal on 12/23/17.
  */
 class ApiServiceEventsHandler{
+    //val apiUrl = "http://blackbulletapp.westeurope.cloudapp.azure.com:8080"
     val apiUrl = "http://192.168.8.106:8080"
-    var api = BackendApiHelper.CreateBackendApi(apiUrl)
+    var api = BackendApiFactory.CreateBackendApi(apiUrl)
 
 
     fun Login(email: String, password: String){
         thread(start = true) {
-            val login = LoginModel(email,password)
+            val login = LoginModel(email, password)
             try {
                 var result = api.Login(login).execute();
                 if(!result.isSuccessful){
@@ -35,13 +37,13 @@ class ApiServiceEventsHandler{
     fun SilentLoginWithStoredCredentials(){
         val email = PreferencesHelper().getPreferences().getString(PreferencesHelper.PrefsKeys.USER_MAIL, "");
         val password = PreferencesHelper().getPreferences().getString(PreferencesHelper.PrefsKeys.USER_PASS, "");
-        val login = LoginModel(email,password)
+        val login = LoginModel(email, password)
         api.Login(login).execute();
     }
 
     fun RefltectNotification(title : String, body : String, packageName: String){
         thread(start = true) {
-            val notification = NotificationModel(title,body,packageName)
+            val notification = NotificationModel(title, body, packageName)
             try {
                 SilentLoginWithStoredCredentials()
                 var result = api.SaveNotification(notification).execute()

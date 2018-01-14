@@ -16,7 +16,7 @@ import android.support.v4.app.NotificationCompat
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import pl.bmideas.michal.bmnotifier.Events.FireBaseEvent
+import pl.bmideas.michal.bmnotifier.Events.NotificationRequestedEvent
 
 
 class BlackBulletApplication : Application() {
@@ -32,6 +32,9 @@ class BlackBulletApplication : Application() {
         fun GetApplicationDefaultContext(): Context{
             return ApplicationDefaultContext!!
         }
+
+
+
     }
     val audioAttributes = AudioAttributes.Builder()
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -90,7 +93,7 @@ class BlackBulletApplication : Application() {
         super.onLowMemory()
     }
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
-    public fun handleFireBaseNotification(event : FireBaseEvent){
+    public fun handleFireBaseNotification(event : NotificationRequestedEvent){
 
         val notification = NotificationCompat.Builder(applicationContext , BlackBulletApplication.NOTIFICATIONCHANLELL_ID  )
                 .setSmallIcon(R.drawable.ic_notifications_black_24dp)
