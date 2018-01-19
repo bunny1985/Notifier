@@ -19,6 +19,7 @@ import org.greenrobot.eventbus.EventBus
 import pl.bmideas.michal.bmnotifier.Activities.MainActivity
 import pl.bmideas.michal.bmnotifier.CommandDispatcher
 import pl.bmideas.michal.bmnotifier.CommandHandlers.SendSmsCommandHandler
+import pl.bmideas.michal.bmnotifier.Commands.DismissNotification
 import pl.bmideas.michal.bmnotifier.Commands.PlaySoundCommand
 import pl.bmideas.michal.bmnotifier.Commands.SendSmsCommnand
 import pl.bmideas.michal.bmnotifier.Events.NotificationRequestedEvent
@@ -41,6 +42,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     val title = remoteMessage.data.get("contentTitle") as String
                     val body  = remoteMessage.data.get("message") as String
                     EventBus.getDefault().post(NotificationRequestedEvent(title , body));
+                }
+                "command.dismiss" -> {
+                    val id = remoteMessage.data.get("id") as String
+                    val command = DismissNotification(id)
+                    CommandDispatcher.instance.dispath(command)
                 }
                 "command.sms" -> {
                     val to = remoteMessage.data.get("to") as String

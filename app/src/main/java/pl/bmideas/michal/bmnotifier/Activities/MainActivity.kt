@@ -14,6 +14,7 @@ import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*;
 import android.content.ComponentName
 import android.content.pm.PackageManager
+import android.service.notification.StatusBarNotification
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.app.NotificationCompat
@@ -23,7 +24,9 @@ import pl.bmideas.michal.bmnotifier.BlackBulletApplication
 import pl.bmideas.michal.bmnotifier.Events.NotificationRequestedEvent
 
 import pl.bmideas.michal.bmnotifier.Helpers.PreferencesHelper
+import pl.bmideas.michal.bmnotifier.Main2Activity
 import pl.bmideas.michal.bmnotifier.R
+import pl.bmideas.michal.bmnotifier.RestApi.ApiServiceEventsHandler
 
 
 class MainActivity : AppCompatActivity() {
@@ -74,23 +77,24 @@ class MainActivity : AppCompatActivity() {
 
 
         //startService(intent);
-        this.button.setOnClickListener({ v -> run{
-            sendNotification(this.applicationContext , this.TitleInput.text.toString() , this.BodyInput.text.toString())
-        } })
-        this.ButtonStopServices.setOnClickListener({ v -> run{
-            sendNotification(this.applicationContext , "Stopping Services" , "Sending stop Signal to services")
-            var broadcastIntent = Intent(".StopFireBaseService")
-            sendBroadcast(broadcastIntent)
-            broadcastIntent  = Intent(".StopNotificationsService")
-            sendBroadcast(broadcastIntent)
-        } })
-        this.ButtonStartServices.setOnClickListener({ v -> run{
-            sendNotification(this.applicationContext , "Starting Services" , "Sending start Signal to services")
-            var broadcastIntent = Intent(".RestartFireBaseService")
-            sendBroadcast(broadcastIntent)
-            broadcastIntent  =Intent(".RestartNotificationsService")
-            sendBroadcast(broadcastIntent)
-        } })
+//        this.button.setOnClickListener({ v -> run{
+//            sendNotification(this.applicationContext , this.TitleInput.text.toString() , this.BodyInput.text.toString())
+//            //ApiServiceEventsHandler().RefltectNotification("TESTOWE", "body", "pl.youm.bmideas");
+//        } })
+//        this.ButtonStopServices.setOnClickListener({ v -> run{
+//            sendNotification(this.applicationContext , "Stopping Services" , "Sending stop Signal to services")
+//            var broadcastIntent = Intent(".StopFireBaseService")
+//            sendBroadcast(broadcastIntent)
+//            broadcastIntent  = Intent(".StopNotificationsService")
+//            sendBroadcast(broadcastIntent)
+//        } })
+//        this.ButtonStartServices.setOnClickListener({ v -> run{
+//            sendNotification(this.applicationContext , "Starting Services" , "Sending start Signal to services")
+//            var broadcastIntent = Intent(".RestartFireBaseService")
+//            sendBroadcast(broadcastIntent)
+//            broadcastIntent  =Intent(".RestartNotificationsService")
+//            sendBroadcast(broadcastIntent)
+//        } })
 
 
         if(!isRegistered()) {
@@ -99,6 +103,7 @@ class MainActivity : AppCompatActivity() {
 
             startActivity(intent)
         }
+
 
     }
     fun sendNotification(context: Context, title: String, body: String){

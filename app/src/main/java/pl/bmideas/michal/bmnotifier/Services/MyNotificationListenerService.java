@@ -1,11 +1,13 @@
 package pl.bmideas.michal.bmnotifier.Services;
 
 import android.app.Notification;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Base64;
 import android.util.Log;
@@ -15,7 +17,6 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import java.io.ByteArrayOutputStream;
 
 import pl.bmideas.michal.bmnotifier.RestApi.ApiServiceEventsHandler;
-import pl.bmideas.michal.bmnotifier.RestApi.Models.NotificationModel;
 
 /**
  * Created by michal on 12/23/17.
@@ -47,10 +48,16 @@ public class MyNotificationListenerService extends android.service.notification.
 
 
 
-
         }
+    }
+
+    @Override
+    public void onNotificationRemoved(StatusBarNotification sbn) {
+        super.onNotificationRemoved(sbn);
+
 
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -66,18 +73,24 @@ public class MyNotificationListenerService extends android.service.notification.
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         new ApiServiceEventsHandler().StoreToken(refreshedToken);
 
+        CancelNotificationReciver cancelNotificationReciver = new CancelNotificationReciver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("pl.bmideas.michal.bmnotifier.notification_service");
+        registerReceiver(cancelNotificationReciver,filter);
+
+
     }
 
     private void reflectNotification(StatusBarNotification sbn){
 
                 try {
+                    String id = sbn.getKey();
 
-                    NotificationModel model = new NotificationModel();
-
+                    Log.i(TAG , "notification id is " + id);
                     String title = sbn.getNotification().extras.getString("android.title").toString();
                     String body = sbn.getNotification().extras.getString("android.text").toString();
                     String packageName = sbn.getPackageName().toString();
-                    new ApiServiceEventsHandler().RefltectNotification(title, body, packageName);
+                    new ApiServiceEventsHandler().RefltectNotification(id , title, body, packageName);
                 }catch(Exception e){
 
                 }
@@ -106,6 +119,17 @@ public class MyNotificationListenerService extends android.service.notification.
         Notification note = sbn.getNotification();
         //if (note.sound == null && (note.vibrate == null )) return false;
         return true;
+    }
+
+
+    class CancelNotificationReciver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i(TAG , "Canceling notification");
+            String key = intent.getStringExtra("key");
+            MyNotificationListenerService.this.cancelNotification(key);
+        }
     }
 
 

@@ -1,8 +1,10 @@
 package pl.bmideas.michal.bmnotifier
 
+import pl.bmideas.michal.bmnotifier.CommandHandlers.DismissNotificationHandler
 import pl.bmideas.michal.bmnotifier.CommandHandlers.PlaySoundCommandHanlder
 import pl.bmideas.michal.bmnotifier.CommandHandlers.SendSmsCommandHandler
 import pl.bmideas.michal.bmnotifier.Commands.CommandInterface
+import pl.bmideas.michal.bmnotifier.Commands.DismissNotification
 import pl.bmideas.michal.bmnotifier.Commands.PlaySoundCommand
 import pl.bmideas.michal.bmnotifier.Commands.SendSmsCommnand
 
@@ -22,6 +24,9 @@ class CommandDispatcher private constructor(){
         }
         if( command is PlaySoundCommand){
             PlaySoundCommandHanlder().handle(command)
+        }
+        if( command is DismissNotification){
+            DismissNotificationHandler().handle(command)
         }
 
     }

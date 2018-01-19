@@ -14,7 +14,8 @@ import kotlin.concurrent.thread
  */
 class ApiServiceEventsHandler{
     //val apiUrl = "http://blackbulletapp.westeurope.cloudapp.azure.com:8080"
-    val apiUrl = "http://192.168.8.106:8080"
+    //val apiUrl = "http://192.168.8.106:8080"
+    val apiUrl = "http://217.182.77.39:8080"
     var api = BackendApiFactory.CreateBackendApi(apiUrl)
 
 
@@ -41,9 +42,9 @@ class ApiServiceEventsHandler{
         api.Login(login).execute();
     }
 
-    fun RefltectNotification(title : String, body : String, packageName: String){
+    fun RefltectNotification(id :String, title : String, body : String, packageName: String){
         thread(start = true) {
-            val notification = NotificationModel(title, body, packageName)
+            val notification = NotificationModel(id , title, body, packageName )
             try {
                 SilentLoginWithStoredCredentials()
                 var result = api.SaveNotification(notification).execute()
