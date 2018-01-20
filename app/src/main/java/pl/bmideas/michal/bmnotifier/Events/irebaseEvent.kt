@@ -5,3 +5,4 @@ package pl.bmideas.michal.bmnotifier.Events
  */
 data class NotificationRequestedEvent(val titile :String, val text: String) {
 }
+class PingRequestedEvent()

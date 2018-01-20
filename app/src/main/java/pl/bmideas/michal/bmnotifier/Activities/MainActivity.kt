@@ -20,13 +20,19 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.app.NotificationCompat
 import com.google.firebase.iid.FirebaseInstanceId
 import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import pl.bmideas.michal.bmnotifier.BlackBulletApplication
 import pl.bmideas.michal.bmnotifier.Events.NotificationRequestedEvent
+import pl.bmideas.michal.bmnotifier.Events.PingRequestedEvent
+import pl.bmideas.michal.bmnotifier.Events.PongRecived
 
 import pl.bmideas.michal.bmnotifier.Helpers.PreferencesHelper
 import pl.bmideas.michal.bmnotifier.Main2Activity
 import pl.bmideas.michal.bmnotifier.R
 import pl.bmideas.michal.bmnotifier.RestApi.ApiServiceEventsHandler
+import android.content.Intent
+import android.content.Intent.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -46,7 +52,7 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this , arrayOf( Manifest.permission.INTERNET , Manifest.permission.SEND_SMS , Manifest.permission.READ_CONTACTS ) , PERMISSION_GRANTED)
         }
 
-
+        EventBus.getDefault().register(this)
         val refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Log.d("MainActivity", "Refreshed token: " + refreshedToken);
 
@@ -62,25 +68,54 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
         EventBus.getDefault().unregister(this);
     }
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
+    fun onPongRecived(event: PongRecived){
+        if(event.isOk){
+            this.TextConnectionInfo.text = "Connection OK"
+        }else{
+            this.TextConnectionInfo.text = "Connection Failed"
+        }
+
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
+        // Get intent, action and MIME type
+        val intent = intent
+        val action = intent.action
+        val type = intent.type
+        if (ACTION_SEND.equals(action) && type != null) {
+            if ("text/plain".equals(type)) {
+                var s  = intent.getStringExtra(EXTRA_TEXT)
+                this.InputNotificationBody.setText(s)
+                this.InputNotificationTitle.setText("Shared Content")
+            }
+        }
 
         if(!isNotificationServiceEnabled()) {
             var enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
             enableNotificationListenerAlertDialog.show();
         }
 
+        this.TextConnectionInfo.text = "Checking..."
+        ApiServiceEventsHandler().CheckIfActiveSocketConnection();
+
+        this.ButtonCheckConnectivity.setOnClickListener({v  -> run{
+            this.TextConnectionInfo.text = "Checking..."
+            ApiServiceEventsHandler().CheckIfActiveSocketConnection();
+
+        }})
 
         //startService(intent);
-//        this.button.setOnClickListener({ v -> run{
-//            sendNotification(this.applicationContext , this.TitleInput.text.toString() , this.BodyInput.text.toString())
-//            //ApiServiceEventsHandler().RefltectNotification("TESTOWE", "body", "pl.youm.bmideas");
-//        } })
+        this.ButtonSendNotification.setOnClickListener({ v -> run{
+            ApiServiceEventsHandler().SendNotification( this.InputNotificationTitle.text.toString() , this.InputNotificationBody.text.toString())
+        } })
+        this.ButtonSendClipBoard.setOnClickListener({ v -> run{
+            ApiServiceEventsHandler().SetClipBoard(this.InputNotificationBody.text.toString())
+        } })
 //        this.ButtonStopServices.setOnClickListener({ v -> run{
 //            sendNotification(this.applicationContext , "Stopping Services" , "Sending stop Signal to services")
 //            var broadcastIntent = Intent(".StopFireBaseService")
@@ -99,8 +134,7 @@ class MainActivity : AppCompatActivity() {
 
         if(!isRegistered()) {
             val intent = Intent(applicationContext, LoginActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
+            intent.addFlags(FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent)
         }
 

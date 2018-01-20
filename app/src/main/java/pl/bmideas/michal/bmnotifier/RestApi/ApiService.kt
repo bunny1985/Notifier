@@ -6,6 +6,7 @@ import pl.bmideas.michal.bmnotifier.Helpers.PreferencesHelper
 import pl.bmideas.michal.bmnotifier.RestApi.Models.FirebaseTokenModel
 import pl.bmideas.michal.bmnotifier.RestApi.Models.LoginModel
 import pl.bmideas.michal.bmnotifier.RestApi.Models.NotificationModel
+import pl.bmideas.michal.bmnotifier.RestApi.Models.PongModel
 import kotlin.concurrent.thread
 
 
@@ -42,6 +43,20 @@ class ApiServiceEventsHandler{
         api.Login(login).execute();
     }
 
+    fun CheckIfActiveSocketConnection(){
+        thread(start = true) {
+            try {
+                SilentLoginWithStoredCredentials()
+                var result = api.Ping().execute()
+                var event = PongRecived( result.body().ok);
+                EventBus.getDefault().post(event);
+            }catch (e:Exception){
+                var event = PongRecived( false);
+                EventBus.getDefault().post(event);
+            }
+        }
+    }
+
     fun RefltectNotification(id :String, title : String, body : String, packageName: String){
         thread(start = true) {
             val notification = NotificationModel(id , title, body, packageName )
@@ -59,6 +74,30 @@ class ApiServiceEventsHandler{
 
         }
     }
+    fun SendNotification( title : String, body : String){
+        RefltectNotification("" , title , body , "pl.bmideas.michal.bmnotifier")
+    }
+
+    fun SetClipBoard( body : String){
+        thread(start = true) {
+            val notification = NotificationModel("", "", body, "pl.bmideas.michal.bmnotifier" )
+
+            try {
+                SilentLoginWithStoredCredentials()
+                var result = api.SetClipBoard(notification).execute()
+                if(!result.isSuccessful){
+                    EventBus.getDefault().post(ApiNotificationReflectionFailed())
+                }else{
+                    EventBus.getDefault().post(ApiNotificationToReflectAdded())
+                }
+            }catch (e:Exception){
+                EventBus.getDefault().post(ApiNotificationReflectionFailed())
+            }
+
+        }
+    }
+
+
     fun StoreToken(token: String){
         thread(start = true) {
             val tokenModel = FirebaseTokenModel(token)

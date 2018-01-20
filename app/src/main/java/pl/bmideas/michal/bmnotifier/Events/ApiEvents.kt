@@ -19,3 +19,6 @@ class ApiTokenStored() {
 }
 class ApiTokenStoringError() {
 }
+data class PongRecived(val isOk: Boolean){
+
+}
