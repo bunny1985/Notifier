@@ -2,10 +2,7 @@ package pl.bmideas.michal.bmnotifier.RestApi
 
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
-import pl.bmideas.michal.bmnotifier.RestApi.Models.FirebaseTokenModel
-import pl.bmideas.michal.bmnotifier.RestApi.Models.LoginModel
-import pl.bmideas.michal.bmnotifier.RestApi.Models.NotificationModel
-import pl.bmideas.michal.bmnotifier.RestApi.Models.PongModel
+import pl.bmideas.michal.bmnotifier.RestApi.Models.*
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -26,6 +23,8 @@ interface BackendApiInterface {
     fun Ping(): Call<PongModel>
     @POST("api/Notification/SetClipboard")
     fun SetClipBoard(@Body notification: NotificationModel): Call<Void>
+    @POST("api/Notification/Battery")
+    fun SendBatteryStatus(@Body battery: BatteryStatus): Call<Void>
 
     @POST("api/Notification")
     fun SaveNotification(@Body notification: NotificationModel): Call<Void>

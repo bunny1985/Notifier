@@ -1,12 +1,10 @@
 package pl.bmideas.michal.bmnotifier.RestApi
 
+import android.util.Log
 import org.greenrobot.eventbus.EventBus
 import pl.bmideas.michal.bmnotifier.Events.*
 import pl.bmideas.michal.bmnotifier.Helpers.PreferencesHelper
-import pl.bmideas.michal.bmnotifier.RestApi.Models.FirebaseTokenModel
-import pl.bmideas.michal.bmnotifier.RestApi.Models.LoginModel
-import pl.bmideas.michal.bmnotifier.RestApi.Models.NotificationModel
-import pl.bmideas.michal.bmnotifier.RestApi.Models.PongModel
+import pl.bmideas.michal.bmnotifier.RestApi.Models.*
 import kotlin.concurrent.thread
 
 
@@ -74,6 +72,26 @@ class ApiServiceEventsHandler{
 
         }
     }
+    fun SendBatteryStatus(isCharging: Boolean , percent : Float){
+
+        thread(start = true) {
+            val batteryStatus = BatteryStatus(percent , isCharging)
+            try {
+                SilentLoginWithStoredCredentials()
+                var result = api.SendBatteryStatus(batteryStatus).execute()
+                if(!result.isSuccessful){
+                    EventBus.getDefault().post(ApiNotificationReflectionFailed())
+                }else{
+                    EventBus.getDefault().post(ApiNotificationToReflectAdded())
+                }
+            }catch (e:Exception){
+                EventBus.getDefault().post(ApiNotificationReflectionFailed())
+            }
+
+        }
+    }
+
+
     fun SendNotification( title : String, body : String){
         RefltectNotification("" , title , body , "pl.bmideas.michal.bmnotifier")
     }

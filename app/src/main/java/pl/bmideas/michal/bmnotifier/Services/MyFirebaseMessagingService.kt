@@ -20,6 +20,7 @@ import pl.bmideas.michal.bmnotifier.Activities.MainActivity
 import pl.bmideas.michal.bmnotifier.CommandDispatcher
 import pl.bmideas.michal.bmnotifier.CommandHandlers.SendSmsCommandHandler
 import pl.bmideas.michal.bmnotifier.Commands.DismissNotification
+import pl.bmideas.michal.bmnotifier.Commands.GetBatteryStatus
 import pl.bmideas.michal.bmnotifier.Commands.PlaySoundCommand
 import pl.bmideas.michal.bmnotifier.Commands.SendSmsCommnand
 import pl.bmideas.michal.bmnotifier.Events.NotificationRequestedEvent
@@ -57,6 +58,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 "command.ringtone" -> {
                     Log.d(TAG, "PlayRingotne Command dispatching")
                     val command = PlaySoundCommand()
+                    CommandDispatcher.instance.dispath(command)
+                }
+                "command.battery" -> {
+                    Log.d(TAG, "BatteryStatus Command dispatching")
+                    val command = GetBatteryStatus()
                     CommandDispatcher.instance.dispath(command)
                 }
             }
