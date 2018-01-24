@@ -4,7 +4,6 @@ import android.Manifest
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.app.AlertDialog;
-import android.app.NotificationManager
 import android.content.*
 
 import android.text.TextUtils
@@ -14,25 +13,22 @@ import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*;
 import android.content.ComponentName
 import android.content.pm.PackageManager
-import android.service.notification.StatusBarNotification
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
-import android.support.v4.app.NotificationCompat
 import com.google.firebase.iid.FirebaseInstanceId
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import pl.bmideas.michal.bmnotifier.BlackBulletApplication
 import pl.bmideas.michal.bmnotifier.Events.NotificationRequestedEvent
-import pl.bmideas.michal.bmnotifier.Events.PingRequestedEvent
 import pl.bmideas.michal.bmnotifier.Events.PongRecived
 
 import pl.bmideas.michal.bmnotifier.Helpers.PreferencesHelper
-import pl.bmideas.michal.bmnotifier.Main2Activity
 import pl.bmideas.michal.bmnotifier.R
 import pl.bmideas.michal.bmnotifier.RestApi.ApiServiceEventsHandler
 import android.content.Intent
 import android.content.Intent.*
+import pl.bmideas.michal.bmnotifier.BlackBulletApplication
+import pl.bmideas.michal.bmnotifier.Services.MyNotificationListenerService
 
 
 class MainActivity : AppCompatActivity() {
@@ -51,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         if(!hasPermission){
             ActivityCompat.requestPermissions(this , arrayOf( Manifest.permission.INTERNET , Manifest.permission.SEND_SMS , Manifest.permission.READ_CONTACTS ) , PERMISSION_GRANTED)
         }
+
 
         EventBus.getDefault().register(this)
         val refreshedToken = FirebaseInstanceId.getInstance().getToken();
@@ -106,6 +103,7 @@ class MainActivity : AppCompatActivity() {
         this.ButtonCheckConnectivity.setOnClickListener({v  -> run{
             this.TextConnectionInfo.text = "Checking..."
             ApiServiceEventsHandler().CheckIfActiveSocketConnection();
+            //BlackBulletApplication.GetApplicationDefaultContext().startService(Intent(BlackBulletApplication.GetApplicationDefaultContext(), MyNotificationListenerService::class.java))
 
         }})
 

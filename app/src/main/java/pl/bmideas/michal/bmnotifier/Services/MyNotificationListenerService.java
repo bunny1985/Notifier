@@ -27,10 +27,7 @@ public class MyNotificationListenerService extends android.service.notification.
 
 
 
-    MyNotificationListenerService(){
-        super();
 
-    }
 
 
     private static final class ApplicationPackageNames {
@@ -51,12 +48,7 @@ public class MyNotificationListenerService extends android.service.notification.
         }
     }
 
-    @Override
-    public void onNotificationRemoved(StatusBarNotification sbn) {
-        super.onNotificationRemoved(sbn);
 
-
-    }
 
     @Override
     public void onDestroy() {
@@ -117,6 +109,8 @@ public class MyNotificationListenerService extends android.service.notification.
         if (sbn.getPackageName() == "android") return false;
         if(sbn.getNotification().extras.getString("android.title")== null) return false;
         Notification note = sbn.getNotification();
+
+
         //if (note.sound == null && (note.vibrate == null )) return false;
         return true;
     }
